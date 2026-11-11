@@ -8,9 +8,9 @@ Command, from this source folder with Python 3.10 or later:
 python -m unittest discover -s tests -v
 ```
 
-Final reported result: **49 tests passed**, exit code 0. Capture stdout/stderr as bytes and pass that file to `python tools/package_cmm2.py --test-results PATH`; the package copies the exact output to `dist/cmm2/TEST-RESULTS.txt` and appends the pending-hardware status. No measured result is inferred from the package being created.
+Final reported result: **74 tests passed**, exit code 0. Capture stdout/stderr as bytes and pass that file to `python tools/package_cmm2.py --test-results PATH`; the package copies the exact output to `dist/cmm2/TEST-RESULTS.txt` and appends the pending-hardware status. No measured result is inferred from the package being created.
 
-Tests execute selected routines and main-loop excerpts from the actual `.BAS`/`.INC` source using `tests/basic_runner.py`. Collision, exits, demon fire, enemy/generator allocation, sound-priority state, title input and font coordinates are checked. Original map bytes are protected. This branch supplies the original nine maps without expansion or ending checks.
+Tests execute selected routines and main-loop excerpts from the actual `.BAS`/`.INC` source using `tests/basic_runner.py`. Collision, exits, demon fire, enemy/generator allocation, sound-priority state, title input and font coordinates are checked. Original map bytes are protected. The expansion also has independent map-format/reachability checks and scripted ending checks.
 
 The Python runner is a strict, small MMBasic language subset. Unsupported statements fail; graphics/audio calls are recorded, randomness is controlled and keyboard/controller values are scripted. It does not execute the complete game in native MMBasic and does not emulate a CMM2. Map reachability assumes combat can clear enemies; it does not prove survivability, fairness or difficulty.
 
@@ -25,10 +25,10 @@ Record the CMM2 model, exact firmware version, SD-card contents and SHA-256 mani
 - Exercise demon shots in every direction against each player and walls. Check independent player fire, enemy compaction, generator returns and crowded enemy pools.
 - **Issue #2 / StopWAV:** after narration in rooms 3 and 5 and treasure rooms, start the next stage and trigger exit, slime and death effects. Confirm the stage-start `StopWAV` call clears interrupted priority and that subsequent effects/music play. Source assertions alone do not establish audible playback.
 - Test music on/off, option sound tests, interrupted narration, death/exit sounds and stage transitions. Measure performance during heavy scrolling/enemy activity and listen for audio glitches.
-- Confirm rooms 1–9 retain their existing layouts. Record the original missing-next-map behavior after room nine; this fixes branch does not supply an ending or ROOM10.
+- Play rooms 10–39 on hardware, checking wall themes beyond room 11, treasure rooms 12–36, enemy density, supplies, performance and difficulty. Finish room 39 with one and two living players; confirm scores/credits, minimum display time, released-then-fresh continue, and Esc exit.
 - Check framebuffer PEEK/POKE boundary handling on real hardware and Escape returning to MODE 1. A headless test cannot validate address arithmetic against physical video memory.
 
-Report failures with the release checksum, room, player state, inputs and firmware version. Physical hardware, visual/audio output, timing and original-room gameplay remain unverified until this checklist is executed.
+Report failures with the release checksum, room, player state, inputs and firmware version. Physical hardware, visual/audio output, timing and 39-room combat balance remain unverified until this checklist is executed.
 
 ## Reproducible package verification
 

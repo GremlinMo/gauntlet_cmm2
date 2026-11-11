@@ -2,6 +2,8 @@ OPTION BASE 0
 
 CLEAR
 
+CONST TotalRooms=39,WallThemes=11
+
 Version$="v0.4a"
 
 #INCLUDE "ENEMIES.INC"
@@ -10,6 +12,7 @@ Version$="v0.4a"
 #INCLUDE "SOUND.INC"
 #INCLUDE "COLLISION.INC"
 #INCLUDE "EXIT.INC"
+#INCLUDE "CAMPAIGN.INC"
 
 GoTo INIT
 
@@ -171,7 +174,7 @@ Silence: actg=0:cntg=maxg:mapside=1
 
 RESTART:
 
-room=1
+room=1:campaignComplete=0
 
 for t=0 to 4
  key(t)=0: bomb(t)=0: score(t)=0
@@ -1160,6 +1163,7 @@ If SHOTPOT=1 Then SHOTPOT=2:VoiceOver("YOU JUST SHOOT THE POTION!","you shot pot
 If KILLDE=1 Then KILLDE=2:VoiceOver("USE MAGIC TO KILL DEATH!","magic kill death")
 
 ' GO TO NEXT LEVEL/ROOM
+If campaignComplete=1 Then ShowCampaignVictory:GoTo RESTART
 If gameover=1 Then GoTo RESTART
 If nextroom=1 Then nextroom=0: Exit Do
 
@@ -1187,7 +1191,7 @@ next t
 dfire=0:DnFire=0:gameover=0
 
 GoSortEnemies=1
-scx=0:scy=0:difwall=(room-1)*18:VOver$=""
+scx=0:scy=0:difwall=RoomWallOffset(room):VOver$=""
 bg=1:time=0
 
 'RESET SOUND
@@ -1196,7 +1200,7 @@ For t=1 To ms:snd(t)=0:Next t
 'RESET EXPLOSIONS
 For t=1 To 10:expl(t)=0:Next t
 
-If room Mod 4=0 Then troom=1 Else troom=0
+troom=RoomIsTreasure(room)
 
 for t=1 to maxg: ae(t)=0: next t 'DISABLE ALL ENEMIES FOR THE NEXT ROOM
 nextroom=0:refresh=1

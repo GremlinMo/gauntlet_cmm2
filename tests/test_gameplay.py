@@ -10,14 +10,16 @@ from basic_runner import Basic
 ROOT = Path(__file__).resolve().parents[1]
 ROUTINES = {"safetile", "stageblocked", "actorcollision", "moveplayer",
             "beginexit", "checkstageexit", "you", "stopwav", "addenemy",
-            "sortenemies", "retenemy", "opendoor", "putenemies"}
+            "sortenemies", "retenemy", "opendoor", "putenemies",
+            "nextcampaignroom", "roomwalloffset", "roomistreasure"}
 
 
 class GameplayTests(unittest.TestCase):
     def setUp(self):
         self.basic = Basic(ROOT, ROUTINES)
         self.basic.noops.add("fast_mapclear")  # Framebuffer refresh after real door mutation.
-        self.basic.globals.update(pln=1, plq=2, maxg=80, cntg=0, room=1)
+        self.basic.globals.update(pln=1, plq=2, maxg=80, cntg=0, room=1,
+                                  totalrooms=39, wallthemes=11)
         for player in (1, 2):
             self.set_array("energy", player, 100)
             self.set_array("x", player, 176 + player * 16)
@@ -229,6 +231,29 @@ class GameplayTests(unittest.TestCase):
         self.assertEqual(self.basic.globals["nextroom"], 0)
         self.assertEqual(self.basic.globals["room"], 1)
 
+    def test_final_room_waits_for_both_players_then_finishes_once(self):
+        self.basic.globals["room"] = 39
+        self.set_array("start", 1, 30)
+        self.basic.call("CheckStageExit")
+        self.assertEqual(self.basic.globals["nextroom"], 0)
+        self.assertEqual(self.basic.globals["campaigncomplete"], 0)
+        self.set_array("start", 2, 30)
+        self.basic.call("CheckStageExit")
+        self.assertEqual(self.basic.globals["room"], 39)
+        self.assertEqual(self.basic.globals["nextroom"], 1)
+        self.assertEqual(self.basic.globals["campaigncomplete"], 1)
+        self.basic.call("CheckStageExit")
+        self.assertEqual(self.basic.globals["room"], 39)
+
+    def test_penultimate_room_advances_to_final_room(self):
+        self.basic.globals["room"] = 38
+        self.set_array("start", 1, 30)
+        self.set_array("start", 2, 30)
+        self.basic.call("CheckStageExit")
+        self.assertEqual(self.basic.globals["room"], 39)
+        self.assertEqual(self.basic.globals["nextroom"], 1)
+        self.assertEqual(self.basic.globals["campaigncomplete"], 0)
+
     def test_dead_or_already_exiting_player_cannot_restart_exit(self):
         self.set_array("energy", 1, 0)
         self.basic.call("BeginExit", 1, 10, 8)
@@ -242,6 +267,21 @@ class GameplayTests(unittest.TestCase):
         self.basic.globals["prwav"] = 999
         self.basic.call("StopWAV")
         self.assertEqual(self.basic.globals["prwav"], 0)
+
+    def test_music_restart_clears_priority_of_interrupted_voice(self):
+        class MusicBasic(Basic):
+            def statement(self, statement, local):
+                if statement.lower().startswith("play modfile "):
+                    self.calls.append(statement)
+                    return
+                return super().statement(statement, local)
+
+        basic = MusicBasic(ROOT, {"playmod", "stopwav"})
+        basic.globals["prwav"] = 999
+        basic.call("PlayMOD", 13)
+        self.assertEqual(basic.globals["prwav"], 0)
+        self.assertEqual(basic.calls[0].lower(), "play stop")
+        self.assertTrue(basic.calls[1].lower().startswith("play modfile "))
 
     def test_demon_fire_initializes_all_eight_directions(self):
         directions = ((0, -8), (8, -8), (8, 0), (8, 8),

@@ -15,7 +15,7 @@ End Sub
 
 'A PLAYER WHO HAS ESCAPED WAITS WITHOUT ADVANCING THE ROOM ALONE
 Sub CheckStageExit
- Local t,living,finished
+ Local t,living,finished,nextStage
  If nextroom=1 Then Exit Sub
  living=0:finished=0
  For t=PLN To PLQ
@@ -27,7 +27,8 @@ Sub CheckStageExit
  If living=0 Then
   gameover=1
  ElseIf finished=living Then
-  room=room+1
+  nextStage=NextCampaignRoom(room)
+  If nextStage=0 Then campaignComplete=1 Else room=nextStage
   nextroom=1
   PlaySample(17,11000)
  EndIf

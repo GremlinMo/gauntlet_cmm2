@@ -1,12 +1,12 @@
-# Gauntlet for Colour Maximite 2 — Gameplay fixes with the original nine rooms
+# Gauntlet for Colour Maximite 2 — 39-room campaign expansion
 
 This is a **CMM2 hardware game** based on Mauro Xavier's Gauntlet port. The original arcade game was designed by Ed Logg for Atari Games. This maintenance branch preserves the original project attribution, media and historical README below. The fixes and expansion are community maintenance work on the GremlinMo fork; they do not replace the original authorship or imply endorsement by the original authors.
 
-This branch keeps the original nine room maps unchanged and focuses on gameplay corrections. It does not add rooms or a campaign ending. The original advancement after room nine is retained: no ROOM10 map is supplied, so the next-map behavior remains an upstream limitation. The separate campaign branch supplies a defined 39-room campaign and ending.
+This branch includes 39 rooms: the original nine maps unchanged, plus 30 new layouts. Clearing room 39 waits for all living players to finish exiting, then shows an animated celebration, final scores and original developer credits. After at least three seconds, release and press Space / Enter or Wii Classic B / Start to return to the title screen. The title screen also waits for a fresh press.
 
 ## Download and run on a CMM2
 
-After publication, the [fork's releases page](https://github.com/GremlinMo/gauntlet_cmm2/releases) provides **Gauntlet-CMM2-Fixes.zip**, a complete SD-card game folder; **GAUNTLET.BAS** as a separate direct download; a complete source ZIP; a patch against upstream `dc76eab5620afd6efc3511e7880d2316918dfdc9`; release notes, test results and SHA-256 checksums. The source branch is [`cmm2-gameplay-fixes`](https://github.com/GremlinMo/gauntlet_cmm2/tree/cmm2-gameplay-fixes).
+After publication, the [fork's releases page](https://github.com/GremlinMo/gauntlet_cmm2/releases) provides **Gauntlet-CMM2-Campaign.zip**, a complete SD-card game folder; **GAUNTLET.BAS** as a separate direct download; a complete source ZIP; a patch against upstream `dc76eab5620afd6efc3511e7880d2316918dfdc9`; release notes, test results and SHA-256 checksums. The source branch is [`cmm2-campaign-expansion`](https://github.com/GremlinMo/gauntlet_cmm2/tree/cmm2-campaign-expansion).
 
 Extract the complete `Gauntlet` folder to your CMM2's SD card. At the MMBasic prompt, change into that folder and run `RUN "GAUNTLET.BAS"`. Keep every included `.INC` file and the `FONTS`, `IMAGES`, `MAPS`, `MOD` and `SOUND` directories together. **The separate GAUNTLET.BAS download is not a complete game:** use it only with the matching includes and assets from the same release.
 
@@ -23,13 +23,16 @@ Choose the original keyboard/numpad or Wii Classic controller options in the gam
 - Call `StopWAV` explicitly at stage start and clear interrupted sound priority, addressing upstream issue #2; retain music restart behavior.
 - Correct the font-row boundary and require a released-then-fresh Space press at the title screen.
 
-- Keep the original nine maps and original post-room-nine behavior; no expansion content or completion screen is added.
+- Add rooms 10–39, seven additional treasure rooms, safe two-player starts, optional keyed vaults and a first-pass difficulty ramp.
+- Cycle existing wall artwork safely, schedule treasure rooms every fourth room and stop progression after room 39.
+- Show a score/credits celebration with fireworks and a released-then-fresh keyboard/Wii continue action.
+- Include the room catalog and deterministic map generator; the original nine map bytes remain unchanged.
 
 See [CHANGELOG-CMM2.md](CHANGELOG-CMM2.md) for this branch's scope and [TESTING-CMM2.md](TESTING-CMM2.md) for evidence and hardware checks.
 
 ## Verification and limits
 
-The final source check on 11 November 2026 passed **49 Python tests**. The tests execute selected real BASIC routines through a focused Python language subset ; packaging separately verifies the original asset bytes. They do **not** validate the CMM2 framebuffer, actual MMBasic parsing/execution of the whole game, Wii devices, audio playback, frame rate or campaign balance. Physical CMM2 testing is **pending**. Use the captured `TEST-RESULTS.txt` release asset for exact output.
+The final source check on 11 November 2026 passed **74 Python tests**. The tests execute selected real BASIC routines through a focused Python language subset and inspect map data. They do **not** validate the CMM2 framebuffer, actual MMBasic parsing/execution of the whole game, Wii devices, audio playback, frame rate or campaign balance. Physical CMM2 testing is **pending**. Use the captured `TEST-RESULTS.txt` release asset for exact output.
 
 Run `python -m unittest discover -s tests -v` with Python 3.10 or later. Build the deterministic CMM2 packages with `python tools/package_cmm2.py --test-results PATH_TO_CAPTURED_OUTPUT`; no third-party Python packages are needed. Packaging preserves every original media/map byte, converts BASIC/include release text to CRLF, and makes the direct BASIC asset byte-for-byte identical to its ZIP entry. Maps use fixed-width binary records and must not undergo text/newline conversion.
 
